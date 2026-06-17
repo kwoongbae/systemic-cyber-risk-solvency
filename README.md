@@ -92,19 +92,19 @@ By default `main.py` reads the IBNR table already in `data/` and goes straight
 to the SCR step. Passing `--force` instead rebuilds the whole chain
 (`preprocess` → `calibration` → `ibnr`) from `advisen.csv` + `sas.csv`.
 
-> **Note.** The IBNR tables behind the published results were produced **without
-> a fixed random seed** and cannot be reproduced bit-for-bit, so `--force`
-> yields statistically-consistent but slightly different figures. For the
-> published numbers, run `main.py` without `--force` (the default).
-
 ---
 
 ## Data
 
-All inputs live in `data/`, which is git-ignored (the sources are licensed):
+All inputs live in `data/`:
 
 | File | Contents |
 |------|----------|
 | `data/advisen.csv` | Advisen cyber-loss records (with accident dates) |
 | `data/sas.csv` | SAS OpRisk records (with settlement dates) |
 | `data/{sector}_ibnr_{T}days.csv` | per-claim IBNR tables consumed by `scr.py` |
+
+The two base datasets, `advisen.csv` and `sas.csv`, are **not uploaded** to this
+repository: they originate from the proprietary Advisen and SAS OpRisk databases
+and cannot be redistributed for security and licensing reasons. Place your own
+copies in `data/` to run the `--force` pipeline from scratch.
