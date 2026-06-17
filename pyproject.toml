@@ -1,7 +1,7 @@
 [project]
 name = "systemic-cyber-scr"
 version = "0.1.0"
-description = "Reproducible SCR pipeline for 'Systemic cyber risks and insurance regulatory capital' (GPRI-D-25-00140R2)"
+description = "Pipeline estimating the Solvency Capital Requirement for systemic cyber risk"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

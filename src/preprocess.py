@@ -25,7 +25,7 @@ import re
 
 import pandas as pd
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 
 # US CPI annual average (BLS), used to inflate historical losses to 2024 USD.
 CPI = {

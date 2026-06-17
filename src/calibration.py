@@ -49,7 +49,7 @@ import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import minimize
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 
 N = 1000                  # network size (Table C1)
 GAMMA_BAR = 0.1           # baseline operational resilience used for calibration

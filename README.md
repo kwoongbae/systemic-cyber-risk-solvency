@@ -1,126 +1,107 @@
 # Systemic Cyber-Risk SCR Pipeline
 
-Reproducible pipeline for
-
-> **Systemic cyber risks and insurance regulatory capital** (GPRI-D-25-00140R2)
-
-Starting from two base datasets, the pipeline extracts ransomware incidents,
-calibrates the contagion intensity, simulates Incurred-But-Not-Reported (IBNR)
-losses through an SIR epidemic model, and computes the Solvency II **Solvency
-Capital Requirement (SCR)** for a cyber-insurance portfolio.
+A pipeline that estimates the Solvency II **Solvency Capital Requirement (SCR)**
+for a cyber-insurance portfolio exposed to systemic cyber risk. Starting from two
+base datasets, it extracts ransomware incidents, calibrates the contagion
+intensity, simulates Incurred-But-Not-Reported (IBNR) losses through an SIR
+epidemic model, and aggregates them into the SCR.
 
 ```bash
-python main.py --sector finance --T 10 --gamma 0.1
-# ...
-# SCR  |  sector=finance  T=10  gamma=0.1  ->  $95.04 million
+python src/scr.py --sector finance --T 10 --gamma 0.1
+# [scr] sector=finance  T=10  gamma=0.1  ->  SCR = $124.8 million
 ```
 
 ---
 
 ## Pipeline
 
-The pipeline is four scripts run in sequence, orchestrated by `main.py`. Each
-reads from / writes to the `data/` folder, so running them one by one
-materialises the intermediate datasets step by step.
+Four scripts (in `src/`) run in sequence, each reading from / writing to `data/`:
 
 ```
 data/advisen.csv  +  data/sas.csv          (base inputs)
-        │
-        ▼  preprocess.py
+        │  preprocess.py
 data/{sector}_ransomware.csv               ransomware incident sample
-        │
-        ▼  calibration.py
+        │  calibration.py
 data/infection_rates_on_{sector}.npy       calibrated beta distribution
-        │
-        ▼  ibnr.py   (+ ransomware sample)
+        │  ibnr.py
 data/{sector}_ibnr_{T}days.csv             per-claim IBNR table
-        │
-        ▼  scr.py
+        │  scr.py
 SCR  ($ million)
 ```
 
-| Script | What it does | Inputs → Output | Manuscript section |
-|--------|--------------|-----------------|--------------------|
-| **`preprocess.py`** | Merges Advisen + SAS and applies the Florackis et al. (2023) text-mining lexicon to isolate ransomware incidents at large firms (≥250 employees, ≥2000), inflation-adjusting losses to 2024 USD. | `advisen.csv`, `sas.csv` → `{sector}_ransomware.csv` | **§4 Data** (Table 3) |
-| **`calibration.py`** | Calibrates the contagion intensity β so the simulated systemic loss matches the Welburn & Strong (2022) benchmark; repeated to obtain a β distribution. | (Welburn & Strong benchmarks) → `infection_rates_on_{sector}.npy` | **§3.4** Systemic loss & SIR calibration; **§5.1** / Fig. 3 |
-| **`ibnr.py`** | Propagates the shock through the network with the SIR model and draws lognormal indirect costs to build the IBNR table across γ = 0.1…0.9. | `{sector}_ransomware.csv`, `infection_rates_on_{sector}.npy` → `{sector}_ibnr_{T}days.csv` | **§3.2–3.3** SIR model & propagation; **§5.2** / Fig. 5 |
-| **`scr.py`** | Builds the monthly frequency and capped severity distributions, runs an LDA Monte-Carlo, and returns the Solvency II premium-risk SCR. | `{sector}_ibnr_{T}days.csv` → SCR | **§3.5** Solvency II framework; **§5.3** / Table 5 |
-| **`main.py`** | Runs all four stages end-to-end for one scenario and prints the SCR. | — | Appendix C (parameter space) |
+| Script | What it does | Section |
+|--------|--------------|---------|
+| `preprocess.py` | Merges Advisen + SAS and applies the Florackis et al. (2023) text-mining lexicon to isolate ransomware incidents at large firms (≥250 employees, from 2000), inflation-adjusting losses to 2024 USD. | §4 Data<br>(Table 3) |
+| `calibration.py` | Calibrates the contagion intensity β so the simulated systemic loss matches the Welburn & Strong (2022) benchmark; repeated to obtain a β distribution. | §3.4<br>§5.1 / Fig. 3 |
+| `ibnr.py` | Propagates the shock through the network with the SIR model and draws lognormal indirect costs to build the IBNR table across γ = 0.1…0.9. | §3.2–3.3<br>§5.2 / Fig. 5 |
+| `scr.py` | Builds the monthly frequency and capped severity distributions, runs an LDA Monte-Carlo, and returns the SCR. | §3.5<br>§5.3 / Table 5 |
+| `main.py` | Orchestrates the stages for one scenario and prints the SCR. | Appendix C |
 
 ---
 
-## Inputs (key inputs & calibration choices, Appendix C)
+## Inputs
 
-| Symbol | Where | Meaning | Value |
-|--------|-------|---------|-------|
-| `N`  | ibnr/calibration | network size | 1000 |
-| `T`  | `--T` | reporting period (days) | sensitivity variable |
-| `n`  | scr | portfolio size (policies) | 150 |
-| `l`  | scr | coverage limit per policy | $50M |
-| `b`  | scr | insurer baseline loss ratio | 0.7244 (10-yr US P&C avg) |
-| `γ`  | `--gamma` | operational resilience (firm-level ~ `U(0.95γ, 1.05γ)`) | sensitivity variable |
-| `β`  | calibration | contagion intensity | calibrated to Welburn & Strong (2022) |
-| `ϕ0` | calibration | direct cost to first-hit firm | finance $56M, information $308M |
+**Key inputs** (deterministic) and **calibration choices** (stochastic):
 
-The sensitivity analysis varies the reporting period `T ∈ {2,5,10}` and the
-operational resilience `γ ∈ {0.1,0.5,0.9}` for both sectors (Table 5).
+| Symbol | Meaning | Value |
+|--------|---------|-------|
+| `N`  | network size | 1,000 |
+| `T`  | reporting period (days) | *sensitivity variable* |
+| `n`  | portfolio size (policies) | 150 |
+| `l`  | coverage limit per policy | $50M |
+| `b`  | insurer baseline loss ratio | 0.7244 (10-yr US P&C avg) |
+| `i0` | initially infected firms | *sensitivity variable* |
+| `ϕ0` | direct cost to first-hit firm | finance $56M, information $308M |
+| `γ`  | operational resilience, firm-level ~ `U(0.95γ̄, 1.05γ̄)` | *sensitivity variable* |
+| `β`  | contagion intensity | calibrated to Welburn & Strong (2022) |
+| `ϕf` | indirect cost per supply-chain firm | `Lognormal(ln(ϕ0·β/γ), 1)` |
+
+### Sensitivity analysis
+
+Three inputs are varied (the rest held at the values above):
+
+| Variable | Range | Where |
+|----------|-------|-------|
+| reporting period `T` | 2, 5, 10 days | Table 5 |
+| operational resilience `γ̄` | 0.1, 0.5, 0.9 | Table 5 |
+| initially infected firms `i0` | empirical count per event; also swept over {1, 3, 5, 7, 10}, and grouped as 1–5 / 6–10 / >10 | Appendix B, §5.3 |
+
+`i0` is the number of firms sharing a common risk driver in each event. The
+headline Table 5 uses the empirical `i0`; varying it (more firms hit
+simultaneously = common-cause failure) sharply amplifies systemic loss.
+
+---
 
 ## Usage
 
 ```bash
-# install deps (numpy, pandas, scipy)
 uv sync                   # or: pip install numpy pandas scipy
-
-# run a stage at a time (each writes its output into data/)
-python preprocess.py  --sectors finance information
-python calibration.py --sectors finance              # ~1 min/sector (10,000 draws)
-python ibnr.py        --sector finance --T 10
-python scr.py         --sector finance --T 10 --gamma 0.1
-
-# or the whole thing
-python main.py --sector finance --T 10 --gamma 0.1   # uses published IBNR -> $124.8M
-python main.py --force                               # rebuild every stage from advisen+sas
 ```
+
+The IBNR tables produced for the analysis are in `data/`, so you can compute the
+SCR for any scenario directly:
+
+```bash
+python src/scr.py --sector finance     --T 10 --gamma 0.1   # -> $124.8M
+python src/scr.py --sector information --T 5  --gamma 0.9   # -> $6.30M
+```
+
+`T ∈ {1,…,10}`, `γ ∈ {0.1,…,0.9}`, `sector ∈ {finance, information}`.
+
+> **Note.** The upstream stages (`preprocess.py` → `calibration.py` → `ibnr.py`)
+> regenerate the IBNR tables from `advisen.csv` + `sas.csv`, but the IBNR tables
+> behind the published results were produced **without a fixed random seed** and
+> cannot be reproduced bit-for-bit. For consistent figures, run `scr.py` on the
+> IBNR tables in `data/`.
+
+---
 
 ## Data
 
-Everything lives in `data/`, which is git-ignored (the sources are licensed):
+All inputs live in `data/`, which is git-ignored (the sources are licensed):
 
 | File | Contents |
 |------|----------|
-| `data/advisen.csv` | Advisen cyber-loss records (merged, with accident dates) — base input |
-| `data/sas.csv` | SAS OpRisk records (with settlement dates) — base input |
-| `data/{sector}_ibnr_{T}days.csv` | **published IBNR tables** — the seed-free CSVs used for the manuscript |
-
-`main.py` works in two modes:
-
-- **Reproduce the paper (default).** With the published `{sector}_ibnr_{T}days.csv`
-  files present, `main.py` skips straight to the SCR step and **reproduces
-  Table 5 exactly** (e.g. finance, T=10, γ=0.1 → **$124.8M**).
-- **Regenerate from scratch (`--force`).** Rebuilds the whole chain from
-  `advisen.csv` + `sas.csv` (preprocess → calibration → ibnr → scr).
-
-## Reproducibility
-
-The SCR step is fully seeded and deterministic. The **published IBNR tables in
-`data/` were generated without a fixed random seed**, so the `--force`
-regeneration path produces statistically-consistent but **not** bit-identical
-results (and re-running the original notebooks would likewise differ). To
-reproduce the manuscript's Table 5 exactly, use the shipped
-`{sector}_ibnr_{T}days.csv` files (the default `main.py` path).
-
-## Project layout
-
-```
-preprocess.py     §4  — ransomware extraction (text-mining)
-calibration.py    §3.4 — beta calibration (Welburn & Strong, 2022)
-ibnr.py           §3.2–3.4 / §5.2 — IBNR simulation (SIR)
-scr.py            §3.5 / §5.3 — Solvency II SCR (LDA)
-main.py           end-to-end orchestration (uses published IBNR by default)
-data/             base inputs (advisen.csv, sas.csv) + published IBNR tables
-```
-
-## Citation
-
-Please cite *"Systemic cyber risks and insurance regulatory capital"*
-(GPRI-D-25-00140R2) when using this software.
+| `data/advisen.csv` | Advisen cyber-loss records (with accident dates) |
+| `data/sas.csv` | SAS OpRisk records (with settlement dates) |
+| `data/{sector}_ibnr_{T}days.csv` | per-claim IBNR tables consumed by `scr.py` |

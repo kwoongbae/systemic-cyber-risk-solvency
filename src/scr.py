@@ -29,7 +29,7 @@ import os
 import numpy as np
 import pandas as pd
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 
 PORTFOLIO_SIZE = 150          # n  : number of policies (Table C1)
 COVERAGE_LIMIT = 50.0         # l  : coverage limit per policy, $M (Table C1)
