@@ -23,3 +23,6 @@ wheels/
 .vscode/
 .claude/
 .DS_Store
+
+# Backup archives (proprietary, do not publish)
+*.zip

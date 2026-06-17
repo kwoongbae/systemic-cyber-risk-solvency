@@ -35,26 +35,33 @@ def _exists(name):
 
 def run(sector="finance", T=10, gamma=0.1, num_simulations=calibration.DEFAULT_NUM_SIMULATIONS,
         seed=0, force=False):
-    # Stage 1 -- ransomware sample
-    if force or not _exists(f"{sector}_ransomware.csv"):
-        print("== Stage 1: preprocess ==")
-        preprocess.run(sectors=(sector,), data_dir=DATA_DIR)
-    else:
-        print(f"== Stage 1: preprocess (skip, {sector}_ransomware.csv exists) ==")
+    ibnr_csv = f"{sector}_ibnr_{T}days.csv"
 
-    # Stage 2 -- beta calibration
-    if force or not _exists(f"infection_rates_on_{sector}.npy"):
-        print("== Stage 2: calibration ==")
-        calibration.calibrate(sector, num_simulations=num_simulations, seed=seed, data_dir=DATA_DIR)
-    else:
-        print(f"== Stage 2: calibration (skip, infection_rates_on_{sector}.npy exists) ==")
+    # Stages 1-3 (preprocess -> calibration -> ibnr) regenerate the IBNR table
+    # from the base data. They run only when the IBNR table is missing or when
+    # --force is given. When the published IBNR table already sits in data/
+    # (the seed-free CSV used for the manuscript), we use it directly so the SCR
+    # reproduces the paper's Table 5.
+    if force or not _exists(ibnr_csv):
+        # Stage 1 -- ransomware sample
+        if force or not _exists(f"{sector}_ransomware.csv"):
+            print("== Stage 1: preprocess ==")
+            preprocess.run(sectors=(sector,), data_dir=DATA_DIR)
+        else:
+            print(f"== Stage 1: preprocess (skip, {sector}_ransomware.csv exists) ==")
 
-    # Stage 3 -- IBNR simulation
-    if force or not _exists(f"{sector}_ibnr_{T}days.csv"):
+        # Stage 2 -- beta calibration
+        if force or not _exists(f"infection_rates_on_{sector}.npy"):
+            print("== Stage 2: calibration ==")
+            calibration.calibrate(sector, num_simulations=num_simulations, seed=seed, data_dir=DATA_DIR)
+        else:
+            print(f"== Stage 2: calibration (skip, infection_rates_on_{sector}.npy exists) ==")
+
+        # Stage 3 -- IBNR simulation
         print("== Stage 3: ibnr ==")
         ibnr.run(sector, T, seed=seed, data_dir=DATA_DIR)
     else:
-        print(f"== Stage 3: ibnr (skip, {sector}_ibnr_{T}days.csv exists) ==")
+        print(f"== Stages 1-3: using existing IBNR table data/{ibnr_csv} ==")
 
     # Stage 4 -- SCR
     print("== Stage 4: scr ==")
