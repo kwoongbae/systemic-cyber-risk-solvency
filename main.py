@@ -20,13 +20,17 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
+
+# the pipeline stage modules live in src/
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 import preprocess
 import calibration
 import ibnr
 import scr
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 def _exists(name):

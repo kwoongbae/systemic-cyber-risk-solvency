@@ -7,15 +7,16 @@ intensity, simulates Incurred-But-Not-Reported (IBNR) losses through an SIR
 epidemic model, and aggregates them into the SCR.
 
 ```bash
-python src/scr.py --sector finance --T 10 --gamma 0.1
-# [scr] sector=finance  T=10  gamma=0.1  ->  SCR = $124.8 million
+python main.py --sector finance --T 10 --gamma 0.1
+# SCR  |  sector=finance  T=10  gamma=0.1  ->  $124.8 million
 ```
 
 ---
 
 ## Pipeline
 
-Four scripts (in `src/`) run in sequence, each reading from / writing to `data/`:
+`main.py` (at the repo root) orchestrates four stage scripts in `src/`, each
+reading from / writing to `data/`:
 
 ```
 data/advisen.csv  +  data/sas.csv          (base inputs)
@@ -78,21 +79,23 @@ simultaneously = common-cause failure) sharply amplifies systemic loss.
 uv sync                   # or: pip install numpy pandas scipy
 ```
 
-The IBNR tables produced for the analysis are in `data/`, so you can compute the
-SCR for any scenario directly:
+Run a scenario with `main.py`:
 
 ```bash
-python src/scr.py --sector finance     --T 10 --gamma 0.1   # -> $124.8M
-python src/scr.py --sector information --T 5  --gamma 0.9   # -> $6.30M
+python main.py --sector finance     --T 10 --gamma 0.1   # -> $124.8M
+python main.py --sector information --T 5  --gamma 0.9   # -> $6.30M
 ```
 
 `T ∈ {1,…,10}`, `γ ∈ {0.1,…,0.9}`, `sector ∈ {finance, information}`.
 
-> **Note.** The upstream stages (`preprocess.py` → `calibration.py` → `ibnr.py`)
-> regenerate the IBNR tables from `advisen.csv` + `sas.csv`, but the IBNR tables
-> behind the published results were produced **without a fixed random seed** and
-> cannot be reproduced bit-for-bit. For consistent figures, run `scr.py` on the
-> IBNR tables in `data/`.
+By default `main.py` reads the IBNR table already in `data/` and goes straight
+to the SCR step. Passing `--force` instead rebuilds the whole chain
+(`preprocess` → `calibration` → `ibnr`) from `advisen.csv` + `sas.csv`.
+
+> **Note.** The IBNR tables behind the published results were produced **without
+> a fixed random seed** and cannot be reproduced bit-for-bit, so `--force`
+> yields statistically-consistent but slightly different figures. For the
+> published numbers, run `main.py` without `--force` (the default).
 
 ---
 
