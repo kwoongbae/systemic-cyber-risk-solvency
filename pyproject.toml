@@ -1,0 +1,18 @@
+[project]
+name = "systemic-cyber-scr"
+version = "0.1.0"
+description = "Reproducible SCR pipeline for 'Systemic cyber risks and insurance regulatory capital' (GPRI-D-25-00140R2)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Kwangwon Bae", email = "kw.bae@60hz.io" }]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+]
+
+# This repository is a set of pipeline scripts, not an installable library.
+# `uv sync` (or `pip install numpy pandas scipy`) just provisions the deps.
+[tool.uv]
+package = false
