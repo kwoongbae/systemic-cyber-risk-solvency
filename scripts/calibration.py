@@ -59,7 +59,7 @@ DEFAULT_NUM_SIMULATIONS = 10_000
 # Welburn and Strong (2022) benchmarks: direct cost phi0 and systemic loss M.
 WELBURN_STRONG = {
     "finance":     {"initial_loss": 56,  "systemic_loss": 3725,  "beta_initial": 0.000606},
-    "information": {"initial_loss": 308, "systemic_loss": 20659, "beta_initial": 0.000608},
+    "information": {"initial_loss": 308, "systemic_loss": 20351, "beta_initial": 0.000608},
 }
 
 
