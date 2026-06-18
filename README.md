@@ -81,6 +81,12 @@ simultaneously = common-cause failure) sharply amplifies systemic loss.
 
 ## Usage
 
+> **Before use.** The two base datasets, `advisen.csv` and `sas.csv`, are
+> **not included** in this repository: they originate from the proprietary
+> Advisen and SAS OpRisk databases and cannot be redistributed for security and
+> licensing reasons. Place your own copies in `data/` to run the `--force`
+> pipeline (and the standalone stages) from scratch. 
+
 ```bash
 uv sync                   # or: pip install numpy pandas scipy
 ```
@@ -98,6 +104,59 @@ By default `main.py` reads the IBNR table already in `data/` and goes straight
 to the SCR step. Passing `--force` instead rebuilds the whole chain
 (`preprocess` → `calibration` → `ibnr`) from `advisen.csv` + `sas.csv`.
 
+### Running each stage on its own
+
+`main.py` calls the stage functions directly, but every stage script is also a
+standalone CLI, so the chain can be reproduced one step at a time. Each stage
+reads its predecessor's output from `data/` and writes its own, so run them in
+order (`preprocess` → `calibration` → `ibnr` → `scr`).
+
+**Stage 1 — `preprocess.py`** (§4): build the ransomware incident sample from
+`advisen.csv` + `sas.csv`.
+
+```bash
+python scripts/preprocess.py                                # all sectors
+python scripts/preprocess.py --sectors finance information  # selected sectors
+# --data-dir DIR   override the data directory (default: data/)
+# -> data/{sector}_ransomware.csv
+```
+
+**Stage 2 — `calibration.py`** (§3.4 / 5.1): calibrate the contagion intensity
+β against the Welburn & Strong (2022) benchmark, repeatedly, to get its
+distribution.
+
+```bash
+python scripts/calibration.py                                  # all sectors, 10,000 draws
+python scripts/calibration.py --sectors finance --num-simulations 10000
+# --seed N         RNG seed (default: 0)
+# --data-dir DIR   data directory
+# -> data/infection_rates_on_{sector}.npy
+```
+
+**Stage 3 — `ibnr.py`** (§3.4 / 5.2): propagate the shock through the SIR
+network and draw lognormal indirect costs, for one sector and reporting horizon
+`T`. The output stacks all nine resilience levels γ = 0.1…0.9.
+
+```bash
+python scripts/ibnr.py --sector finance --T 10     # required: --sector, --T
+python scripts/ibnr.py --sector information --T 5
+# --seed N         RNG seed (default: 0)
+# --data-dir DIR   data directory
+# -> data/{sector}_ibnr_{T}days.csv
+```
+
+**Stage 4 — `scr.py`** (§3.5 / 5.3, Table 5): build the frequency/severity
+distributions, run the LDA Monte-Carlo and return the SCR for one scenario.
+
+```bash
+python scripts/scr.py --sector finance --T 10 --gamma 0.1   # required: --sector, --T, --gamma
+# --seed N         RNG seed (default: 0)
+# --data-dir DIR   data directory
+# -> prints SCR ($ million)
+```
+
+`sector ∈ {finance, information}`, `T ∈ {1,…,10}`, `γ ∈ {0.1,…,0.9}`.
+
 ---
 
 ## Data
@@ -113,6 +172,5 @@ All inputs live in `data/`:
 
 
 The two base datasets, `advisen.csv` and `sas.csv`, are **not uploaded** to this
-repository: they originate from the proprietary Advisen and SAS OpRisk databases
-and cannot be redistributed for security and licensing reasons. Place your own
-copies in `data/` to run the `--force` pipeline from scratch.
+repository (see the *Before use* note above); place your own copies in `data/`
+to run the `--force` pipeline from scratch.
