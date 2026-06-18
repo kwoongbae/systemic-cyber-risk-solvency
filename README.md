@@ -1,4 +1,4 @@
-# Systemic Cyber-Risk SCR Pipeline
+# Systemic cyber risks and insurance regulatory capital
 
 A pipeline that estimates the Solvency II **Solvency Capital Requirement (SCR)**
 for a cyber-insurance portfolio exposed to systemic cyber risk. Starting from two
@@ -15,7 +15,7 @@ python main.py --sector finance --T 10 --gamma 0.1
 
 ## Pipeline
 
-`main.py` (at the repo root) orchestrates four stage scripts in `src/`, each
+`main.py` (at the repo root) orchestrates four stage scripts in `scripts/`, each
 reading from / writing to `data/`:
 
 ```
@@ -30,13 +30,15 @@ data/{sector}_ibnr_{T}days.csv             per-claim IBNR table
 SCR  ($ million)
 ```
 
-| Script | What it does | Section |
-|--------|--------------|---------|
-| `preprocess.py` | Merges Advisen + SAS and applies the Florackis et al. (2023) text-mining lexicon to isolate ransomware incidents at large firms (≥250 employees, from 2000), inflation-adjusting losses to 2024 USD. | §4 Data<br>(Table 3) |
-| `calibration.py` | Calibrates the contagion intensity β so the simulated systemic loss matches the Welburn & Strong (2022) benchmark; repeated to obtain a β distribution. | §3.4<br>§5.1 / Fig. 3 |
-| `ibnr.py` | Propagates the shock through the network with the SIR model and draws lognormal indirect costs to build the IBNR table across γ = 0.1…0.9. | §3.2–3.3<br>§5.2 / Fig. 5 |
-| `scr.py` | Builds the monthly frequency and capped severity distributions, runs an LDA Monte-Carlo, and returns the SCR. | §3.5<br>§5.3 / Table 5 |
-| `main.py` | Orchestrates the stages for one scenario and prints the SCR. | Appendix C |
+
+| Script           | What it does                                                                                                                                                                                         | Section                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `preprocess.py`  | Merges Advisen + SAS and applies the Florackis et al. (2023) text-mining lexicon to isolate ransomware incidents at large firms (≥250 employees, from 2000), inflation-adjusting losses to 2024 USD. | §4 Data (Table 3)      |
+| `calibration.py` | Calibrates the contagion intensity β so the simulated systemic loss matches the Welburn & Strong (2022) benchmark; repeated to obtain a β distribution.                                              | §3.4 §5.1 / Fig. 3     |
+| `ibnr.py`        | Propagates the shock through the network with the SIR model and draws lognormal indirect costs to build the IBNR table across γ = 0.1…0.9.                                                           | §3.2–3.3 §5.2 / Fig. 5 |
+| `scr.py`         | Builds the monthly frequency and capped severity distributions, runs an LDA Monte-Carlo, and returns the SCR.                                                                                        | §3.5 §5.3 / Table 5    |
+| `main.py`        | Orchestrates the stages for one scenario and prints the SCR.                                                                                                                                         | Appendix C             |
+
 
 ---
 
@@ -44,28 +46,32 @@ SCR  ($ million)
 
 **Key inputs** (deterministic) and **calibration choices** (stochastic):
 
-| Symbol | Meaning | Value |
-|--------|---------|-------|
-| `N`  | network size | 1,000 |
-| `T`  | reporting period (days) | *sensitivity variable* |
-| `n`  | portfolio size (policies) | 150 |
-| `l`  | coverage limit per policy | $50M |
-| `b`  | insurer baseline loss ratio | 0.7244 (10-yr US P&C avg) |
-| `i0` | initially infected firms | *sensitivity variable* |
-| `ϕ0` | direct cost to first-hit firm | finance $56M, information $308M |
-| `γ`  | operational resilience, firm-level ~ `U(0.95γ̄, 1.05γ̄)` | *sensitivity variable* |
-| `β`  | contagion intensity | calibrated to Welburn & Strong (2022) |
-| `ϕf` | indirect cost per supply-chain firm | `Lognormal(ln(ϕ0·β/γ), 1)` |
+
+| Symbol | Meaning                                                  | Value                                 |
+| ------ | -------------------------------------------------------- | ------------------------------------- |
+| `N`    | network size                                             | 1,000                                 |
+| `T`    | reporting period (days)                                  | *sensitivity variable*                |
+| `n`    | portfolio size (policies)                                | 150                                   |
+| `l`    | coverage limit per policy                                | $50M                                  |
+| `b`    | insurer baseline loss ratio                              | 0.7244 (10-yr US P&C avg)             |
+| `i0`   | initially infected firms                                 | *sensitivity variable*                |
+| `ϕ0`   | direct cost to first-hit firm                            | finance $56M, information $308M       |
+| `γ`    | operational resilience, firm-level ~ `U(0.95γ̄, 1.05γ̄)` | *sensitivity variable*                |
+| `β`    | contagion intensity                                      | calibrated to Welburn & Strong (2022) |
+| `ϕf`   | indirect cost per supply-chain firm                      | `Lognormal(ln(ϕ0·β/γ), 1)`            |
+
 
 ### Sensitivity analysis
 
 Three inputs are varied (the rest held at the values above):
 
-| Variable | Range | Where |
-|----------|-------|-------|
-| reporting period `T` | 2, 5, 10 days | Table 5 |
-| operational resilience `γ̄` | 0.1, 0.5, 0.9 | Table 5 |
+
+| Variable                      | Range                                                                                        | Where            |
+| ----------------------------- | -------------------------------------------------------------------------------------------- | ---------------- |
+| reporting period `T`          | 2, 5, 10 days                                                                                | Table 5          |
+| operational resilience `γ̄`   | 0.1, 0.5, 0.9                                                                                | Table 5          |
 | initially infected firms `i0` | empirical count per event; also swept over {1, 3, 5, 7, 10}, and grouped as 1–5 / 6–10 / >10 | Appendix B, §5.3 |
+
 
 `i0` is the number of firms sharing a common risk driver in each event. The
 headline Table 5 uses the empirical `i0`; varying it (more firms hit
@@ -98,11 +104,13 @@ to the SCR step. Passing `--force` instead rebuilds the whole chain
 
 All inputs live in `data/`:
 
-| File | Contents |
-|------|----------|
-| `data/advisen.csv` | Advisen cyber-loss records (with accident dates) |
-| `data/sas.csv` | SAS OpRisk records (with settlement dates) |
-| `data/{sector}_ibnr_{T}days.csv` | per-claim IBNR tables consumed by `scr.py` |
+
+| File                             | Contents                                         |
+| -------------------------------- | ------------------------------------------------ |
+| `data/advisen.csv`               | Advisen cyber-loss records (with accident dates) |
+| `data/sas.csv`                   | SAS OpRisk records (with settlement dates)       |
+| `data/{sector}_ibnr_{T}days.csv` | per-claim IBNR tables consumed by `scr.py`       |
+
 
 The two base datasets, `advisen.csv` and `sas.csv`, are **not uploaded** to this
 repository: they originate from the proprietary Advisen and SAS OpRisk databases

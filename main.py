@@ -22,8 +22,8 @@ import argparse
 import os
 import sys
 
-# the pipeline stage modules live in src/
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+# the pipeline stage modules live in scripts/
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts"))
 
 import preprocess
 import calibration
