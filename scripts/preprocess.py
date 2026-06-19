@@ -7,10 +7,13 @@ keyword/phrase lexicon with inclusion and exclusion rules -- to isolate
 ransomware-type cyber incidents at large enterprises (>= 250 employees) that
 occurred from 2000 onward. Losses are inflation-adjusted to 2024 USD with the
 US CPI and the cleaned sample is written, per sector, to
-``data/{sector}_ransomware.csv``.
+``data/generated/ransomware_{sector}.csv``.
 
 Aligns with manuscript Section 4 (Data) and produces the empirical sample
 summarised in Table 3.
+
+Inputs : data/raw/advisen.csv, data/raw/sas.csv
+Output : data/processed/ransomware_{sector}.csv
 
 Run:
     python preprocess.py                 # all sectors
@@ -25,7 +28,48 @@ import re
 
 import pandas as pd
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+# ---------------------------------------------------------------------------
+# Project layout (repo-root relative, so scripts run from any directory):
+#   data/raw/        advisen.csv, sas.csv          (proprietary, user-supplied)
+#   data/processed/  ransomware_{sector}.csv       (text-mined sample)
+#   output/calibration/  beta_{sector}.npy
+#   output/ibnr/         ibnr_{sector}_{T}d.csv
+#   output/scr/          scr_{sector}.csv
+# ---------------------------------------------------------------------------
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RAW_DIR = os.path.join(ROOT, "data", "raw")
+PROCESSED_DIR = os.path.join(ROOT, "data", "processed")
+CALIB_DIR = os.path.join(ROOT, "output", "calibration")
+IBNR_DIR = os.path.join(ROOT, "output", "ibnr")
+SCR_DIR = os.path.join(ROOT, "output", "scr")
+
+# kept for backwards-compatible call sites
+DATA_DIR = os.path.join(ROOT, "data")
+
+
+def _ensure(d):
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def raw_dir():
+    return _ensure(RAW_DIR)
+
+
+def processed_dir():
+    return _ensure(PROCESSED_DIR)
+
+
+def calibration_dir():
+    return _ensure(CALIB_DIR)
+
+
+def ibnr_dir():
+    return _ensure(IBNR_DIR)
+
+
+def scr_dir():
+    return _ensure(SCR_DIR)
 
 # US CPI annual average (BLS), used to inflate historical losses to 2024 USD.
 CPI = {
@@ -142,17 +186,18 @@ def _build_combined(advisen_path, sas_path):
     return combined
 
 
-def run(sectors=("finance", "information", "manufacturing"), data_dir=DATA_DIR):
+def run(sectors=("finance", "information", "manufacturing"), data_dir=None):
     """Build and save the ransomware sample for each requested sector."""
-    advisen_path = os.path.join(data_dir, "advisen.csv")
-    sas_path = os.path.join(data_dir, "sas.csv")
+    advisen_path = os.path.join(raw_dir(), "advisen.csv")
+    sas_path = os.path.join(raw_dir(), "sas.csv")
     combined = _build_combined(advisen_path, sas_path)
 
+    out_dir = processed_dir()
     outputs = {}
     for sector in sectors:
         labels = SECTOR_LABELS[sector]
         sub = combined[combined["NAIC_SECTOR_DESC"].isin(labels)].copy()
-        out = os.path.join(data_dir, f"{sector}_ransomware.csv")
+        out = os.path.join(out_dir, f"ransomware_{sector}.csv")
         sub.to_csv(out, index=False)
         outputs[sector] = (out, len(sub))
         print(f"[preprocess] {sector:12s}: {len(sub):4d} incidents -> {os.path.basename(out)}")
@@ -163,13 +208,12 @@ def _parse(argv=None):
     p = argparse.ArgumentParser(description="Extract ransomware incidents at large firms (Section 4).")
     p.add_argument("--sectors", nargs="+", default=["finance", "information", "manufacturing"],
                    choices=list(SECTOR_LABELS))
-    p.add_argument("--data-dir", default=DATA_DIR)
     return p.parse_args(argv)
 
 
 def main(argv=None):
     args = _parse(argv)
-    run(sectors=tuple(args.sectors), data_dir=args.data_dir)
+    run(sectors=tuple(args.sectors))
 
 
 if __name__ == "__main__":
