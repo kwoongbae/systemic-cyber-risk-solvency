@@ -1,18 +1,26 @@
 # Systemic cyber risks and insurance regulatory capital
 
-A four-stage, reproducible pipeline that quantifies how **systemic** cyber risk
-propagates into an insurer's regulatory capital, and estimates the Solvency II
-**Solvency Capital Requirement (SCR)** for a cyber-insurance portfolio under that
-risk. From two proprietary loss datasets it (1) text-mines a sample of ransomware
-incidents at large firms; (2) calibrates the contagion intensity β by
-moment-matching the simulated systemic loss to the Welburn & Strong (2022)
-benchmark; (3) propagates each incident through a homogeneous firm network with a
-deterministic **SIR** epidemic model and draws lognormal indirect costs to build
-a per-claim **Incurred-But-Not-Reported (IBNR)** table; and (4) runs a
-Loss-Distribution-Approach (LDA) Monte-Carlo over the portfolio to return the
-premium-risk SCR. The pipeline is fully seeded, so identical inputs and seed
-reproduce the same SCR, and every input in the tables below can be overridden
-from the command line to re-run the whole chain under a different assumption.
+When a ransomware incident at a large firm cascades into **systemic** cyber risk,
+how much regulatory capital must a cyber-insurer hold against it? This repository
+answers that question scenario by scenario: it estimates the Solvency II
+**Solvency Capital Requirement (SCR)** for a cyber-insurance portfolio exposed to
+such an event.
+
+It is a reproducible pipeline of **four stages**:
+
+1. **Extract** — text-mine a sample of ransomware incidents at large firms from
+   two proprietary loss datasets.
+2. **Calibrate** — fit the contagion intensity β so the simulated systemic loss
+   matches the Welburn & Strong (2022) benchmark.
+3. **Simulate** — propagate each incident through a firm network with a
+   deterministic **SIR** epidemic model and draw lognormal indirect costs,
+   building a per-claim **Incurred-But-Not-Reported (IBNR)** loss table.
+4. **Aggregate** — run a Loss-Distribution-Approach (LDA) Monte-Carlo over the
+   portfolio to return the premium-risk **SCR**.
+
+Every stage is seeded, so the same inputs reproduce the same SCR; and every input
+in the [tables below](#inputs) can be overridden from the command line to recompute
+the SCR under a different scenario.
 
 ```bash
 python main.py --sector finance --T 10 --gamma 0.1

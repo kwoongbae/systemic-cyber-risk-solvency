@@ -8,6 +8,8 @@
 data/raw/*
 !data/raw/.gitkeep
 data/processed/
+# obsolete layout (kept on disk, never published)
+data/generated/
 
 # ---------------------------------------------------------------------------
 # Python
