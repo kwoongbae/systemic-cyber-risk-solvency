@@ -31,7 +31,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from preprocess import ibnr_dir, scr_dir
+from extract import ibnr_dir, scr_dir
 
 PORTFOLIO_SIZE = 150          # n  : number of policies (Table C1)
 COVERAGE_LIMIT = 50.0         # l  : coverage limit per policy, $M (Table C1)

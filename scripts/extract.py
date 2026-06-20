@@ -1,5 +1,5 @@
 """
-preprocess.py -- Stage 1: build the ransomware incident sample.
+extract.py -- Stage 1: build the ransomware incident sample.
 
 Merges the two base datasets (``data/advisen.csv`` and ``data/sas.csv``) and
 applies the text-mining procedure of Florackis et al. (2023) -- a curated
@@ -16,8 +16,8 @@ Inputs : data/raw/advisen.csv, data/raw/sas.csv
 Output : data/processed/ransomware_{sector}.csv
 
 Run:
-    python preprocess.py                 # all sectors
-    python preprocess.py --sectors finance information
+    python extract.py                 # all sectors
+    python extract.py --sectors finance information
 """
 
 from __future__ import annotations
@@ -200,7 +200,7 @@ def run(sectors=("finance", "information", "manufacturing"), data_dir=None):
         out = os.path.join(out_dir, f"ransomware_{sector}.csv")
         sub.to_csv(out, index=False)
         outputs[sector] = (out, len(sub))
-        print(f"[preprocess] {sector:12s}: {len(sub):4d} incidents -> {os.path.basename(out)}")
+        print(f"[extract] {sector:12s}: {len(sub):4d} incidents -> {os.path.basename(out)}")
     return outputs
 
 

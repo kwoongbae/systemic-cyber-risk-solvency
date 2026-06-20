@@ -3,8 +3,8 @@ main.py -- run the full pipeline end-to-end and print the SCR sensitivity table.
 
 Chains the four stages:
 
-    preprocess.py  ->  calibration.py  ->  ibnr.py  ->  scr.py
-    (Section 4)        (Section 3.3)       (3.4/5.2)    (3.5/5.3, Table 5)
+    extract.py  ->  calibration.py  ->  ibnr.py  ->  scr.py
+    (Section 4)     (Section 5.1)       (3.4/5.2)    (3.5/5.3, Table 5)
 
 Project layout:
     data/raw/            advisen.csv, sas.csv          (proprietary, user-supplied)
@@ -34,7 +34,7 @@ import sys
 # the pipeline stage modules live in scripts/
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts"))
 
-import preprocess
+import extract
 import calibration
 import ibnr
 import scr
@@ -63,15 +63,15 @@ def run(sector="finance", T_values=DEFAULT_T, gamma_values=DEFAULT_GAMMA,
     force_ibnr = force or calib_overridden or ibnr_overridden
 
     # Stage 1 -- ransomware sample (data/processed/)
-    ransomware = os.path.join(preprocess.processed_dir(), f"ransomware_{sector}.csv")
+    ransomware = os.path.join(extract.processed_dir(), f"ransomware_{sector}.csv")
     if force or not os.path.exists(ransomware):
-        print("== Stage 1: preprocess ==")
-        preprocess.run(sectors=(sector,))
+        print("== Stage 1: extract ==")
+        extract.run(sectors=(sector,))
     else:
-        print(f"== Stage 1: preprocess (skip, {os.path.basename(ransomware)} exists) ==")
+        print(f"== Stage 1: extract (skip, {os.path.basename(ransomware)} exists) ==")
 
     # Stage 2 -- beta calibration (output/calibration/)
-    beta = os.path.join(preprocess.calibration_dir(), f"beta_{sector}.npy")
+    beta = os.path.join(extract.calibration_dir(), f"beta_{sector}.npy")
     if force_calib or not os.path.exists(beta):
         print("== Stage 2: calibration ==")
         calibration.calibrate(sector, num_simulations=num_simulations, seed=seed,

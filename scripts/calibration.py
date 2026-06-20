@@ -7,8 +7,7 @@ benchmark systemic loss reported by Welburn and Strong (2022). Repeating the
 calibration many times under the stochastic loss model yields an empirical
 *distribution* of beta, saved to ``data/generated/beta_{sector}.npy``.
 
-Aligns with manuscript Section 3.3 (contagion-intensity calibration) and
-Section 5.1 / Figure 3.
+Aligns with manuscript Section 5.1 / Figure 3.
 
 ==============================================================================
 Modelling assumptions
@@ -49,7 +48,7 @@ import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import minimize
 
-from preprocess import calibration_dir
+from extract import calibration_dir
 
 N = 1000                  # network size (Table C1)
 GAMMA_BAR = 0.1           # baseline operational resilience used for calibration
@@ -138,7 +137,7 @@ def run(sectors=("finance", "information"), num_simulations=DEFAULT_NUM_SIMULATI
 
 
 def _parse(argv=None):
-    p = argparse.ArgumentParser(description="Calibrate beta from Welburn & Strong (2022) (Section 3.3).")
+    p = argparse.ArgumentParser(description="Calibrate beta from Welburn & Strong (2022) (Section 5.1).")
     p.add_argument("--sectors", nargs="+", default=["finance", "information"],
                    choices=list(WELBURN_STRONG))
     p.add_argument("--num-simulations", type=int, default=DEFAULT_NUM_SIMULATIONS)
