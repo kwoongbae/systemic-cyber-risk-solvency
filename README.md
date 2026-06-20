@@ -26,7 +26,7 @@ This framework consists of **four stages**:
 
 | Order | Function (path)          | What it does                                                                                                          | Input                                                                            | Output                                   | Manuscript section   |
 | ----- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------- | -------------------- |
-| 1     | `scripts/preprocess.py`  | Merges the two datasets and text-mines ransomware incidents at large firms.                                           | `data/raw/advisen.csv`, `data/raw/sas.csv`                                       | `data/processed/ransomware_{sector}.csv` | §4 (Table 3)         |
+| 1     | `scripts/extract.py`     | Merges the two datasets and text-mines ransomware incidents at large firms.                                           | `data/raw/advisen.csv`, `data/raw/sas.csv`                                       | `data/processed/ransomware_{sector}.csv` | §4 (Table 3)         |
 | 2     | `scripts/calibration.py` | Fits β so the simulated systemic loss matches the Welburn & Strong (2022) estimate, yielding its sector distribution. |                                                                                  | `output/calibration/beta_{sector}.npy`   | §5.1 (Fig. 3)        |
 | 3     | `scripts/ibnr.py`        | Propagates the shock through the SIR network and draws indirect costs (IBNR table).                                   | `data/processed/ransomware_{sector}.csv`, `output/calibration/beta_{sector}.npy` | `output/ibnr/ibnr_{sector}_{T}d.csv`     | §3.4 / 5.2 (Fig. 5)  |
 | 4     | `scripts/scr.py`         | Derives frequency/severity from the IBNR table and runs the LDA Monte-Carlo for the volume measure and SCR.           | `output/ibnr/ibnr_{sector}_{T}d.csv`                                             | `output/scr/scr_{sector}.csv` + SCR ($M) | §3.5 / 5.3 (Table 5) |
@@ -88,7 +88,7 @@ Run the four stages in order, each reading its predecessor's output. `sector ∈
 
 ```bash
 # Stage 1 — Extract: build the ransomware incident sample
-python scripts/preprocess.py
+python scripts/extract.py
 
 # Stage 2 — Calibrate: fit the contagion intensity β distribution
 python scripts/calibration.py --sectors finance
@@ -101,7 +101,7 @@ python scripts/scr.py --sector finance --T 10 --gamma 0.1
 ```
 
 Or run all four stages at once with `main.py`, which chains
-`preprocess` → `calibration` → `ibnr` → `scr` for one scenario and prints the
+`extract` → `calibration` → `ibnr` → `scr` for one scenario and prints the
 SCR:
 
 ```bash
