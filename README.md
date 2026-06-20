@@ -12,14 +12,14 @@ results of the manuscript.
 
 This framework consists of **four stages**:
 
-1. **Extract** — text-mine a sample of ransomware incidents at large firms from
+1. **Extract** a sample of ransomware incidents at large firms from
   Advisen and SAS OpRisk databases, following the methodology of Florackis et al.  (2023).
-2. **Calibrate** — infer the contagion intensity β of cyber risk based on the
+2. **Calibrate** the ransomware's contagion intensity β on supply-chain based on the
   estimates of Welburn & Strong (2022).
-3. **Simulate** — apply the calibrated β to the extracted incidents through a
+3. Apply the calibrated β to the extracted incidents through a
   deterministic **SIR** model, drawing lognormal indirect costs, to build a
    per-claim **Incurred-But-Not-Reported (IBNR)** loss table.
-4. **Aggregate** — combine the frequency and severity distributions of the IBNR
+4. Combine the frequency and severity distributions of the IBNR
   table into a volume measure via a Loss-Distribution-Approach (LDA)  
    Monte-Carlo, and obtain the Solvency II **SCR** from it.
 
@@ -52,15 +52,15 @@ sensitivity analysis, and if so how.
 ### Key inputs (deterministic)
 
 
-| Symbol | Meaning                                     | Manuscript value                                                                                                        | Varied in sensitivity analysis?                                          |
-| ------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `N`    | network size (supply-chain firms)           | 1,000                                                                                                                   | No                                                                       |
-| `T`    | reporting period (days)                     | 10 (baseline)                                                                                                           | **Yes** — 2, 5, 10 days (Table 5).                                       |
-| `n`    | portfolio size (policies)                   | 150                                                                                                                     | No                                                                       |
-| `l`    | coverage limit per policy                   | $50M                                                                                                                    | No                                                                       |
-| `b`    | insurer baseline loss ratio                 | 0.724 (10-yr US P&C average, 2014–2023)                                                                                 | No                                                                       |
-| `i0`   | number of initially infected firms          | the count from the empirical data sample                                                                                | **Yes** — {1, 3, 5, 7, 10}, grouped 1–5 / 6–10 / >10 (§5.3, Appendix B). |
-| `ϕ0`   | direct cost to the initially affected firms | $56M (finance) / $308M (information) in §5.1.the observed losses of those firms in the empirical data sample in §5.2. | No                                                                       |
+| Symbol | Meaning                                     | Manuscript value                                                                                                         | Varied in sensitivity analysis?                                          |
+| ------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `N`    | network size (supply-chain firms)           | 1,000                                                                                                                    | No                                                                       |
+| `T`    | reporting period (days)                     | 10 (baseline)                                                                                                            | **Yes** — 2, 5, 10 days (Table 5).                                       |
+| `n`    | portfolio size (policies)                   | 150                                                                                                                      | No                                                                       |
+| `l`    | coverage limit per policy                   | $50M                                                                                                                     | No                                                                       |
+| `b`    | insurer baseline loss ratio                 | 0.724 (10-yr US P&C average, 2014–2023)                                                                                  | No                                                                       |
+| `i0`   | number of initially infected firms          | the count from the empirical data sample                                                                                 | **Yes** — {1, 3, 5, 7, 10}, grouped 1–5 / 6–10 / >10 (§5.3, Appendix B). |
+| `ϕ0`   | direct cost to the initially affected firms | $56M (finance) / $308M (information) in §5.1.the observed losses of those firms in the empirical data sample in §5.2. | No                                                                       |
 
 
 ### Calibration choices (stochastic)
