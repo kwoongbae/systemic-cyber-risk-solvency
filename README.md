@@ -17,11 +17,10 @@ This framework consists of **four stages**:
 2. **Calibrate** the ransomware's contagion intensity β on supply-chain based on the
   estimates of Welburn & Strong (2022).
 3. Apply the calibrated β to the extracted incidents through a
-  deterministic **SIR** model, drawing lognormal indirect costs, to build a
+  deterministic SIR model, drawing lognormal indirect costs, to build a
    per-claim **Incurred-But-Not-Reported (IBNR)** loss table.
 4. Combine the frequency and severity distributions of the IBNR
-  table into a volume measure via a Loss-Distribution-Approach (LDA)  
-   Monte-Carlo, and obtain the Solvency II **SCR** from it.
+  table into a volume measure via a Loss-Distribution-Approach (LDA) Monte-Carlo, and obtain the Solvency II **SCR** from it.
 
 
 | Order | Function (path)          | Input                                                                            | Output                                   | Manuscript section   |
@@ -60,7 +59,7 @@ sensitivity analysis, and if so how.
 | `l`    | coverage limit per policy                   | $50M                                                                                                                     | No                                                                       |
 | `b`    | insurer baseline loss ratio                 | 0.724 (10-yr US P&C average, 2014–2023)                                                                                  | No                                                                       |
 | `i0`   | number of initially infected firms          | the count from the empirical data sample                                                                                 | **Yes** — {1, 3, 5, 7, 10}, grouped 1–5 / 6–10 / >10 (§5.3, Appendix B). |
-| `ϕ0`   | direct cost to the initially affected firms | $56M (finance) / $308M (information) in §5.1.the observed losses of those firms in the empirical data sample in §5.2. | No                                                                       |
+| `ϕ0`   | direct cost to the initially affected firms | $56M (finance) / $308M (information) in §5.1. the observed losses of those firms in the empirical data sample in §5.2. | No                                                                       |
 
 
 ### Calibration choices (stochastic)
