@@ -24,12 +24,12 @@ This framework consists of **four stages**:
    Monte-Carlo, and obtain the Solvency II **SCR** from it.
 
 
-| Order | Function (path)          | What it does                                                                                                          | Input                                                                            | Output                                   | Manuscript section   |
-| ----- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------- | -------------------- |
-| 1     | `scripts/extract.py`     | Merges the two datasets and text-mines ransomware incidents at large firms.                                           | `data/raw/advisen.csv`, `data/raw/sas.csv`                                       | `data/processed/ransomware_{sector}.csv` | §4 (Table 3)         |
-| 2     | `scripts/calibration.py` | Fits β so the simulated systemic loss matches the Welburn & Strong (2022) estimate, yielding its sector distribution. |                                                                                  | `output/calibration/beta_{sector}.npy`   | §5.1 (Fig. 3)        |
-| 3     | `scripts/ibnr.py`        | Propagates the shock through the SIR network and draws indirect costs (IBNR table).                                   | `data/processed/ransomware_{sector}.csv`, `output/calibration/beta_{sector}.npy` | `output/ibnr/ibnr_{sector}_{T}d.csv`     | §3.4 / 5.2 (Fig. 5)  |
-| 4     | `scripts/scr.py`         | Derives frequency/severity from the IBNR table and runs the LDA Monte-Carlo for the volume measure and SCR.           | `output/ibnr/ibnr_{sector}_{T}d.csv`                                             | `output/scr/scr_{sector}.csv` + SCR ($M) | §3.5 / 5.3 (Table 5) |
+| Order | Function (path)          | Input                                                                            | Output                                   | Manuscript section   |
+| ----- | ------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------- | -------------------- |
+| 1     | `scripts/extract.py`     | `data/raw/advisen.csv`, `data/raw/sas.csv`                                       | `data/processed/ransomware_{sector}.csv` | §4 (Table 3)         |
+| 2     | `scripts/calibration.py` |                                                                                  | `output/calibration/beta_{sector}.npy`   | §5.1 (Fig. 3)        |
+| 3     | `scripts/ibnr.py`        | `data/processed/ransomware_{sector}.csv`, `output/calibration/beta_{sector}.npy` | `output/ibnr/ibnr_{sector}_{T}d.csv`     | §3.4 / 5.2 (Fig. 5)  |
+| 4     | `scripts/scr.py`         | `output/ibnr/ibnr_{sector}_{T}d.csv`                                             | `output/scr/scr_{sector}.csv` + SCR ($M) | §3.5 / 5.3 (Table 5) |
 
 
 > The two base datasets, `advisen.csv` and `sas.csv`, are **not uploaded** to
